@@ -60,7 +60,6 @@ class PlanGraph(object):
                 newPropositionLayer.addMutexProp(prop1, prop2)
         # set new proposition layer
         self.setPropositionLayer(newPropositionLayer)
-                    
                 
     def mutexActions(self, a1, a2, mutexProps):
         '''YOUR CODE HERE: complete code for deciding whether actions a1 and a2 are mutex, given the previous proposition layer. Your exapnd function should call this function'''
