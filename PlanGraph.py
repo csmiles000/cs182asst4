@@ -14,7 +14,6 @@ class PlanGraph(object):
     A class for representing a level in the plan graph. For each level i, the PlanGraph consists of the actionLayer and propositionLayer at this level
     '''
 
-
     def __init__(self, level, independentActions):
         '''
         Constructor
@@ -34,9 +33,7 @@ class PlanGraph(object):
         return self.actionLayer
     
     def expand(self, previousLevel, allProps, allActions): #you can change the params the function takes if you like
-        # get previous proposition layer
         previousPropositionLayer = previousLevel.getPropositionLayer
-        # initialize new action layer
         newActionLayer = ActionLayer()
         # only actions whose preconditions are satisfied are added
         for action in allActions:
@@ -46,20 +43,15 @@ class PlanGraph(object):
         for action1 in newActionLayer.getActions():
             for action2 in newActionLayer.getActions():
                 actionPair = Pair(action1, action2)
-                if (mutexActions(action1, action2, previousPropositionLayer.getMutexProps())) and (actionPair not in newActionLayer.getMutexActions()):
+                if mutexActions(action1, action2, previousPropositionLayer.getMutexProps()) and actionPair not in newActionLayer.getMutexActions():
                     newActionLayer.addMutexActions(action1, action2)
-        # initialize new proposition layer
+       
         newPropositionLayer = PropositionLayer()
-        # all effects of actions in new action layer are added
         for action in newActionLayer.getActions():
             for prop in action.getAdd():
                 if prop not in newPropositionLayer.getPropositions():
                     newPropositionLayer.addProposition(prop)
-            '''
-            for prop in action.getDelete():
-                if prop not in newPropositionLayer.getPropositions():
-                    newPropositionLayer.addProposition(prop)
-            '''
+
         # add mutex propositions
         for prop1 in newPropositionLayer.getPropositions():
             for prop2 in newPropositionLayer.getPropositions():
@@ -82,9 +74,8 @@ class PlanGraph(object):
     
     def mutexPropositions(self, prop1, prop2, mutexActions):
         '''YOUR CODE HERE: complete code for deciding whether propositions p1 and p2 are mutex, given the previous proposition layer. Your exapnd function should call this function'''
-        allProducersPairwiseMutex = True
         for producer1 in prop1.getProducers():
             for producer2 in prop2.getProducers():
                 if Pair(producer1, producer2) not in mutexActions:
-                    allProducersPairwiseMutex = False
-        return allProducersPairwiseMutex
+                    return False
+        return True
