@@ -64,7 +64,17 @@ class GraphPlan(object):
             pgNext = PlanGraph(level, self.independentActions) #create new PlanGraph object
             pgNext.expand(self.graph[level-1], self.propositions, self.actions) #calls the expand function, which you are implementing in the PlanGraph class
             self.graph.append(copy.deepcopy(pgNext)) #appending the new level to the plan graph
-            
+        
+        '''
+        for stage in self.graph:
+            print "actions"
+            a_s = stage.getActionLayer().getActions()
+            for a in a_s:
+                print a.getName()
+            print "props"
+            print stage.getPropositionLayer().getPropositions()
+        '''
+        
         if (self.goalStateNotInPropLayer(goalState, self.graph[level].getPropositionLayer().getPropositions()) | self.goalStateHasMutex(goalState, self.graph[level].getPropositionLayer())):
             print 'could not find a plan'
             return None #this means we stopped the while loop above because we reached a fixed point in the graph. nothing more to do, we failed!
@@ -111,7 +121,7 @@ class GraphPlan(object):
                     pres.append(pre)
             newPlan = self.extract(Graph, pres, level-1)
             if newPlan == None:
-                return None
+                return []
             else:
                 return newPlan + plan
         prop = choice(subGoals) #arbitrary
@@ -121,12 +131,12 @@ class GraphPlan(object):
             if prop in act.getAdd() and self.noMutexActionInPlan(plan, act, currentActionLayer):
                 providers.append(act)
         if not providers:
-            return None
+            return []
         for act in providers:
             plan = self.gpSearch(Graph, list(set(subGoals) - set(act.getAdd())), plan.insert(0, act), level)
-            if plan is not None:
+            if plan:
                 return plan
-        return None
+        return []
               
         '''helper function that checks whether all propositions of the goal state are in the current graph level'''
     def goalStateNotInPropLayer(self, goalState, propositions):
