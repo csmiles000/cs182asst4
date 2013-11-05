@@ -62,18 +62,9 @@ class GraphPlan(object):
             self.noGoods.append([])
             level = level +1
             pgNext = PlanGraph(level, self.independentActions) #create new PlanGraph object
+            print "EXPANDING"
             pgNext.expand(self.graph[level-1], self.propositions, self.actions) #calls the expand function, which you are implementing in the PlanGraph class
             self.graph.append(copy.deepcopy(pgNext)) #appending the new level to the plan graph
-        
-        '''
-        for stage in self.graph:
-            print "actions"
-            a_s = stage.getActionLayer().getActions()
-            for a in a_s:
-                print a.getName()
-            print "props"
-            print stage.getPropositionLayer().getPropositions()
-        '''
         
         if (self.goalStateNotInPropLayer(goalState, self.graph[level].getPropositionLayer().getPropositions()) | self.goalStateHasMutex(goalState, self.graph[level].getPropositionLayer())):
             print 'could not find a plan'
@@ -81,13 +72,16 @@ class GraphPlan(object):
         
         sizeNoGood = len(self.noGoods[level]) #remember size of nogood table
         
+        print "INITIAL EXTRACTION AT", level
         plan = self.extract(self.graph, goalState, level) #try to extract a plan since all of the goal propositions are in current graph level, and are not mutex
         while(plan==None): #while we didn't extract a plan successfully             
             level = level+1 
             self.noGoods.append([])
             pgNext = PlanGraph(level, self.independentActions) #create next level of the graph by expanding
+            print "EXPANDING"
             pgNext.expand(self.graph[level-1], self.propositions, self.actions) #create next level of the graph by expanding
             self.graph.append(copy.deepcopy(pgNext))
+            print "FURTHER EXTRACTION"
             plan = self.extract(self.graph, goalState, level) #try to extract a plan again
             if ((plan==None) & (self.Fixed(level))): #if failed and reached fixed point
                 if sizeNoGood==len(self.noGoods[level]): #if size of nogood didn't change, means there's nothing more to do. We failed.
@@ -103,8 +97,9 @@ class GraphPlan(object):
         '''YOUR CODE HERE: you should implement the backsearch part of graphplan that tries to extract a plan when all goal propositions exist in a graph plan level. you can write additional helper functions'''
         if level == 0:
             return []
-        if set(subGoals) in [set(x) for x in self.noGoods[level]]:
+        if subGoals in self.noGoods[level]:
             return None
+        print "CALLING GP FROM EXTRACT"
         plan = self.gpSearch(Graph, subGoals, [], level)
         if plan is not None:
             return plan
@@ -118,10 +113,11 @@ class GraphPlan(object):
             pres = []
             for act in plan:
                 for pre in act.getPre():
-                    pres.append(pre)
+                    if pre not in pres:
+                        pres.append(pre)
             newPlan = self.extract(Graph, pres, level-1)
-            if newPlan == None:
-                return []
+            if newPlan is None:
+                return None
             else:
                 return newPlan + plan
         prop = choice(subGoals) #arbitrary
@@ -131,14 +127,21 @@ class GraphPlan(object):
             if prop in act.getAdd() and self.noMutexActionInPlan(plan, act, currentActionLayer):
                 providers.append(act)
         if not providers:
-            return []
+            return None
         for act in providers:
-            plan = self.gpSearch(Graph, list(set(subGoals) - set(act.getAdd())), plan.insert(0, act), level)
-            if plan:
-                return plan
-        return []
+            testPlan = copy.deepcopy(plan)
+            testPlan.insert(0, act)
+            newSubGoals = []
+            for prop in subGoals:
+                if prop not in act.getAdd():
+                    newSubGoals.append(prop)
+            testPlan = self.gpSearch(Graph, newSubGoals, testPlan, level)
+            if testPlan is not None:
+                return testPlan
+        return None
+    
               
-        '''helper function that checks whether all propositions of the goal state are in the current graph level'''
+    '''helper function that checks whether all propositions of the goal state are in the current graph level'''
     def goalStateNotInPropLayer(self, goalState, propositions):
         for goal in goalState:
             if goal not in propositions:
