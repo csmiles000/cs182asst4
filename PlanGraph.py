@@ -33,7 +33,7 @@ class PlanGraph(object):
         return self.actionLayer
     
     def expand(self, previousLevel, allProps, allActions): #you can change the params the function takes if you like
-        previousPropositionLayer = previousLevel.getPropositionLayer
+        previousPropositionLayer = previousLevel.getPropositionLayer()
         newActionLayer = ActionLayer()
         # only actions whose preconditions are satisfied are added
         for action in allActions:
@@ -43,7 +43,7 @@ class PlanGraph(object):
         for action1 in newActionLayer.getActions():
             for action2 in newActionLayer.getActions():
                 actionPair = Pair(action1, action2)
-                if mutexActions(action1, action2, previousPropositionLayer.getMutexProps()) and actionPair not in newActionLayer.getMutexActions():
+                if self.mutexActions(action1, action2, previousPropositionLayer.getMutexProps()) and actionPair not in newActionLayer.getMutexActions():
                     newActionLayer.addMutexActions(action1, action2)
        
         newPropositionLayer = PropositionLayer()
@@ -55,9 +55,9 @@ class PlanGraph(object):
         # add mutex propositions
         for prop1 in newPropositionLayer.getPropositions():
             for prop2 in newPropositionLayer.getPropositions():
-            propPair = Pair(prop1, prop2)
-            if (mutexPropositions(prop1, prop2, newActionLayer.getMutexActions())) and (propPair not in newPropositionLayer.getMutexProps()):
-                newPropositionLayer.addMutexProp(prop1, prop2)
+                propPair = Pair(prop1, prop2)
+                if self.mutexPropositions(prop1, prop2, newActionLayer.getMutexActions()) and propPair not in newPropositionLayer.getMutexProps():
+                    newPropositionLayer.addMutexProp(prop1, prop2)
         # set new proposition layer
         self.setPropositionLayer(newPropositionLayer)
                 

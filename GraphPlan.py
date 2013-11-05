@@ -9,6 +9,7 @@ from PropositionLayer import PropositionLayer
 from PlanGraph import PlanGraph
 from Parser import Parser
 from Action import Action
+from random import choice
 
 
 class GraphPlan(object):
@@ -90,11 +91,42 @@ class GraphPlan(object):
 
     def extract(self, Graph, subGoals, level):
         '''YOUR CODE HERE: you should implement the backsearch part of graphplan that tries to extract a plan when all goal propositions exist in a graph plan level. you can write additional helper functions'''
-        pass
+        if level == 0:
+            return []
+        if set(subGoals) in [set(x) for x in self.noGoods[level]]:
+            return False
+        plan = self.gpSearch(Graph, subGoals, [], level)
+        if plan != False:
+            return plan
+        if subGoals not in self.noGoods[level]:
+            self.noGoods[level].append(subGoals)
+        return False
     
     def gpSearch(self, Graph, subGoals, plan, level):
         '''YOUR CODE HERE: you don't have to use this, but you might consider having this function and calling it from extract. The functions can call each other recursively to find the plan. You don't have to use this'''
-        pass
+        if not subGoals:
+            pres = []
+            for act in plan:
+                for pre in act.getPre():
+                    pres.append(pre)
+            newPlan = self.extract(Graph, pres, level-1)
+            if newPlan == False:
+                return False
+            else:
+                return newPlan + plan
+        prop = choice(subGoals) #arbitrary
+        providers = []
+        currentActionLayer = Graph[level].getActionLayer()
+        for act in currentActionLayer.getActions():
+            if prop in act.getAdd() and self.noMutexActionInPlan(plan, act, currentActionLayer):
+                providers.append(act)
+        if not providers:
+            return False
+        for act in providers:
+            plan = self.gpSearch(Graph, list(set(subGoals) - set(act.getAdd())), plan.insert(0, act), level)
+            if plan != False:
+                return plan
+        return False
               
         '''helper function that checks whether all propositions of the goal state are in the current graph level'''
     def goalStateNotInPropLayer(self, goalState, propositions):
