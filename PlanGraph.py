@@ -35,28 +35,37 @@ class PlanGraph(object):
     def expand(self, previousLevel, allProps, allActions): #you can change the params the function takes if you like
         previousPropositionLayer = previousLevel.getPropositionLayer()
         newActionLayer = ActionLayer()
-        # only actions whose preconditions are satisfied are added
+        
         for action in allActions:
             if previousPropositionLayer.allPrecondsInLayer(action):
-                newActionLayer.addAction(action)
+                dont_add = False
+                for pre1 in action.getPre():
+                    for pre2 in action.getPre():
+                        if Pair(pre1, pre2) in previousPropositionLayer.getMutexProps():
+                            dont_add = True
+                if not dont_add:
+                    newActionLayer.addAction(action)
         # add mutex actions
         for action1 in newActionLayer.getActions():
             for action2 in newActionLayer.getActions():
                 actionPair = Pair(action1, action2)
-                if self.mutexActions(action1, action2, previousPropositionLayer.getMutexProps()) and actionPair not in newActionLayer.getMutexActions():
+                if action1 != action2 and self.mutexActions(action1, action2, previousPropositionLayer.getMutexProps()) and actionPair not in newActionLayer.getMutexActions():
                     newActionLayer.addMutexActions(action1, action2)
        
         newPropositionLayer = PropositionLayer()
-        for action in newActionLayer.getActions():
-            for prop in action.getAdd():
-                if prop not in newPropositionLayer.getPropositions():
-                    newPropositionLayer.addProposition(prop)
-
+        for prop in allProps:
+            dont_add = True
+            for action in newActionLayer.getActions():
+                if prop in action.getAdd():
+                    dont_add = False
+            if not dont_add:
+                newPropositionLayer.addProposition(prop)
+    
         # add mutex propositions
         for prop1 in newPropositionLayer.getPropositions():
             for prop2 in newPropositionLayer.getPropositions():
                 propPair = Pair(prop1, prop2)
-                if self.mutexPropositions(prop1, prop2, newActionLayer.getMutexActions()) and propPair not in newPropositionLayer.getMutexProps():
+                if prop1 != prop2 and self.mutexPropositions(prop1, prop2, newActionLayer.getMutexActions()) and propPair not in newPropositionLayer.getMutexProps():
                     newPropositionLayer.addMutexProp(prop1, prop2)
         # set new proposition layer
         self.setPropositionLayer(newPropositionLayer)

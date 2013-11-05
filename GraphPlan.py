@@ -94,13 +94,13 @@ class GraphPlan(object):
         if level == 0:
             return []
         if set(subGoals) in [set(x) for x in self.noGoods[level]]:
-            return False
+            return None
         plan = self.gpSearch(Graph, subGoals, [], level)
-        if plan != False:
+        if plan is not None:
             return plan
         if subGoals not in self.noGoods[level]:
             self.noGoods[level].append(subGoals)
-        return False
+        return None
     
     def gpSearch(self, Graph, subGoals, plan, level):
         '''YOUR CODE HERE: you don't have to use this, but you might consider having this function and calling it from extract. The functions can call each other recursively to find the plan. You don't have to use this'''
@@ -110,8 +110,8 @@ class GraphPlan(object):
                 for pre in act.getPre():
                     pres.append(pre)
             newPlan = self.extract(Graph, pres, level-1)
-            if newPlan == False:
-                return False
+            if newPlan == None:
+                return None
             else:
                 return newPlan + plan
         prop = choice(subGoals) #arbitrary
@@ -121,12 +121,12 @@ class GraphPlan(object):
             if prop in act.getAdd() and self.noMutexActionInPlan(plan, act, currentActionLayer):
                 providers.append(act)
         if not providers:
-            return False
+            return None
         for act in providers:
             plan = self.gpSearch(Graph, list(set(subGoals) - set(act.getAdd())), plan.insert(0, act), level)
-            if plan != False:
+            if plan is not None:
                 return plan
-        return False
+        return None
               
         '''helper function that checks whether all propositions of the goal state are in the current graph level'''
     def goalStateNotInPropLayer(self, goalState, propositions):
