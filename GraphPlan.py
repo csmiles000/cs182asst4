@@ -62,7 +62,6 @@ class GraphPlan(object):
             self.noGoods.append([])
             level = level +1
             pgNext = PlanGraph(level, self.independentActions) #create new PlanGraph object
-            print "EXPANDING"
             pgNext.expand(self.graph[level-1], self.propositions, self.actions) #calls the expand function, which you are implementing in the PlanGraph class
             self.graph.append(copy.deepcopy(pgNext)) #appending the new level to the plan graph
         
@@ -72,16 +71,13 @@ class GraphPlan(object):
         
         sizeNoGood = len(self.noGoods[level]) #remember size of nogood table
         
-        print "INITIAL EXTRACTION AT", level
         plan = self.extract(self.graph, goalState, level) #try to extract a plan since all of the goal propositions are in current graph level, and are not mutex
         while(plan==None): #while we didn't extract a plan successfully             
             level = level+1 
             self.noGoods.append([])
             pgNext = PlanGraph(level, self.independentActions) #create next level of the graph by expanding
-            print "EXPANDING"
             pgNext.expand(self.graph[level-1], self.propositions, self.actions) #create next level of the graph by expanding
             self.graph.append(copy.deepcopy(pgNext))
-            print "FURTHER EXTRACTION"
             plan = self.extract(self.graph, goalState, level) #try to extract a plan again
             if ((plan==None) & (self.Fixed(level))): #if failed and reached fixed point
                 if sizeNoGood==len(self.noGoods[level]): #if size of nogood didn't change, means there's nothing more to do. We failed.
@@ -99,7 +95,6 @@ class GraphPlan(object):
             return []
         if subGoals in self.noGoods[level]:
             return None
-        print "CALLING GP FROM EXTRACT"
         plan = self.gpSearch(Graph, subGoals, [], level)
         if plan is not None:
             return plan

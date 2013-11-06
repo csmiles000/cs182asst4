@@ -32,7 +32,7 @@ class PlanGraph(object):
     def getActionLayer(self):
         return self.actionLayer
     
-    def expand(self, previousLevel, allProps, allActions): #you can change the params the function takes if you like
+    def expand(self, previousLevel, allProps, allActions): # you can change the params the function takes if you like
         previousPropositionLayer = previousLevel.getPropositionLayer()
         newActionLayer = ActionLayer()
         
