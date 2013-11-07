@@ -1,10 +1,7 @@
 import util
 from collections import deque
-from GraphPlan import GraphPlan
+from RelaxedGraphPlan import RelaxedGraphPlan
 from Parser import Parser
-from PlanGraph import PlanGraph
-from Pair import Pair
-from Action import Action
 
 # data structure used to store states, parents, actions, and cost
 class Node:
@@ -31,6 +28,7 @@ class Node:
 
   def getTotalCost(self):
     return self.totalCost
+
 
 class DwrProblem:
   def __init__(self, domain, problem):
@@ -68,12 +66,19 @@ def gpHeuristic(state, problem=None):
   A heuristic function estimates the cost from the current state to the nearest
   goal in the provided SearchProblem.  This heuristic is trivial.
   """
-  return 0
+  #run graph plan
+  #when im doing plan graph return empty for mutex
+  #domain = 'dwrDomain.txt'
+  #problem = 'dwrProblem2.txt'
+  #gp = RelaxedPlan(domain, problem)
+  rgp = RelaxedGraphPlan(state, problem.goal, problem.propositions, problem.actions)
+  return rgp.level
 
 def aStarSearch(problem, heuristic=gpHeuristic):
   "Search the node that has the lowest combined cost and heuristic first."
   "*** YOUR CODE HERE ***"
   # f(x) = g(x) + h(x). f(x) is stored in the fringe.
+  
   def costPlusHeuristic(node):
     g = node.getTotalCost()
     state = node.getState()
@@ -88,6 +93,7 @@ def aStarSearch(problem, heuristic=gpHeuristic):
 
   while not fringe.isEmpty(): 
     currentNode = fringe.pop()
+    print currentNode.getTotalCost()
     currentState = currentNode.getState()
     # skip node if we have already explored it
     if currentState in explored:
@@ -110,10 +116,12 @@ def aStarSearch(problem, heuristic=gpHeuristic):
     
 if __name__ == '__main__':
     domain = 'dwrDomain.txt'
-    problem = 'dwrProblem2.txt'
-#    gp = GraphPlan(domain, problem)
+    problem = 'dwrProblem.txt'
     problem = DwrProblem(domain, problem)
-    hi = aStarSearch(problem, gpHeuristic)
-    for a in hi:
-      print a
+    plan = aStarSearch(problem, gpHeuristic)
+    if plan:
+      for a in plan:
+        print a
+    else:
+      "IMPOSSIBRU"
 
