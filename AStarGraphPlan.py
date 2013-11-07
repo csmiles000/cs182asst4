@@ -94,7 +94,7 @@ def aStarSearch(problem, heuristic=gpHeuristic):
     isNew = True
     # skip node if we have already explored it
     for e in explored:
-      if all([p in e for p in currentState]):
+      if len(currentState) == len(e) and all([p in e for p in currentState]):
         isNew = False
     if isNew:
       # if at a goal state, backtrace parent nodes to get complete path taken to goal
