@@ -46,9 +46,10 @@ class DwrProblem:
     return self.initialState
 
   def isGoalState(self, state):
-    if len(state) != len(self.goal):
-      return False
-    return all([s in self.goal for s in state]) and all(s in state for s in self.goal)
+    for goal in self.goal:
+      if goal not in state:
+        return False
+    return True
 
   def getSuccessors(self, state):
     successors = []
@@ -89,8 +90,7 @@ def aStarSearch(problem, heuristic=gpHeuristic):
     currentNode = fringe.pop()
     currentState = currentNode.getState()
     # skip node if we have already explored it
-    for e in explored:
-      if all(p in e for p in currentState) and all(p in currentState for p in e):
+    if currentState in explored:
         continue
     else:
       # if at a goal state, backtrace parent nodes to get complete path taken to goal
@@ -104,14 +104,16 @@ def aStarSearch(problem, heuristic=gpHeuristic):
       else:
         explored.append(currentState)
         for successors in problem.getSuccessors(currentState):
-          (state, action) = (successors[0], successors[1])
-          node = Node(state=state, parent=currentNode, prevAction=action, pathCost=1)
+          (successor, action) = (successors[0], successors[1])
+          node = Node(state=successor, parent=currentNode, prevAction=action, pathCost=1)
           fringe.push(node)
     
 if __name__ == '__main__':
     domain = 'dwrDomain.txt'
-    problem = 'dwrProblem.txt'
+    problem = 'dwrProblem2.txt'
 #    gp = GraphPlan(domain, problem)
     problem = DwrProblem(domain, problem)
-    print aStarSearch(problem, gpHeuristic)
+    hi = aStarSearch(problem, gpHeuristic)
+    for a in hi:
+      print a
 

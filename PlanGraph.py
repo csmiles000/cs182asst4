@@ -38,12 +38,6 @@ class PlanGraph(object):
         
         for action in allActions:
             if previousPropositionLayer.allPrecondsInLayer(action):
-                dont_add = False
-                for pre1 in action.getPre():
-                    for pre2 in action.getPre():
-                        if Pair(pre1, pre2) in previousPropositionLayer.getMutexProps():
-                            dont_add = True
-                if not dont_add:
                     newActionLayer.addAction(action)
         # add mutex actions
         for action1 in newActionLayer.getActions():
@@ -56,11 +50,7 @@ class PlanGraph(object):
         
         newPropositionLayer = PropositionLayer()
         for prop in allProps:
-            dont_add = True
-            for action in newActionLayer.getActions():
-                if prop in action.getAdd():
-                    dont_add = False
-            if not dont_add:
+            if newActionLayer.effectExists(prop):
                 newPropositionLayer.addProposition(prop)
     
         # add mutex propositions
